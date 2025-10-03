@@ -52,7 +52,6 @@ function db_update($pdo, string $table, array $fields, array $conditions)
     return $statement->execute(array_merge($values, $conditionValues));
 }
 
-// NEW FUNCTION: db_delete to delete records based on conditions
 function db_delete($pdo, string $table, array $conditions)
 {
     $query = "DELETE FROM $table WHERE ";
@@ -89,4 +88,24 @@ function db_fetch_one($pdo, string $table, array $conditions)
     $statement->execute($values);
 
     return $statement->fetch(PDO::FETCH_ASSOC);
+}
+
+function db_fetch_where($pdo, string $table, array $conditions)
+{
+    $query = "SELECT * FROM $table WHERE ";
+    
+    $conditionArray = [];
+    foreach ($conditions as $key => $value) {
+        $conditionArray[] = "$key = ?";
+    }
+
+    $query .= implode(' AND ', $conditionArray);
+
+    $statement = $pdo->prepare($query);
+
+    $values = array_values($conditions);
+    
+    $statement->execute($values);
+
+    return $statement->fetchAll(PDO::FETCH_ASSOC);
 }
