@@ -1,51 +1,54 @@
 <?php
-require_once 'database/db.php';
-require_once 'classes/Todo.php';
+require 'database/db.php';
+require 'classes/Todo.php';
 
-$todo = new Todo($conn);
+$pdo = db_connect();
 
-if (!isset($_GET['id'])) {
-    header("Location: index.php");
-    exit();
-}
-
-$id = $_GET['id'];
-$currentTodo = $todo->getTodoById($id);
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $title = trim($_POST['title']);
-    $due_date = $_POST['due_date'];
-
-    if (!empty($title) && !empty($due_date)) {
-        if ($todo->update($id, $title, $due_date)) {
-            header("Location: index.php");
-            exit();
-        } else {
-            $error = "Failed to update todo.";
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    if (empty($_POST['description']) || empty($_POST['due_date'])) {
+        $errorMessage = "Description and Due Date are required";
     } else {
-        $error = "Please fill in all fields.";
+        $fields = [
+            'description' => $_POST['description'],
+            'due_date' => $_POST['due_date'],
+            'is_completed' => isset($_POST['is_completed']) ? 1 : 0,
+        ];
+        
+        $conditions = [
+            'id' => $_GET['id']
+        ];
+
+        $result = db_update($pdo, 'todos', $fields, $conditions);
+
+        if ($result) {
+            $successMessage = "Todo updated successfully";
+            $row = db_fetch_one($pdo, 'todos', $conditions);
+        } else {
+            $errorMessage = "Failed to update todo";
+        }
     }
 }
-?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Todo</title>
-    <link rel="stylesheet" href="assets/pico.min.css">
-</head>
-<body>
-    <main class="container">
-        <h1>Edit Todo</h1>
-        <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
-        <form method="POST">
-            <label>Title</label>
-            <input type="text" name="title" value="<?php echo htmlspecialchars($currentTodo['title']); ?>" required>
-            <label>Due Date</label>
-            <input type="date" name="due_date" value="<?php echo $currentTodo['due_date']; ?>" required>
-            <button type="submit">Update</button>
-        </form>
-        <a href="index.php">Back to List</a>
-    </main>
-</body>
-</html>
+
+if (!isset($row)) {
+    if (!isset($_GET['id'])) {
+        header("Location: index.php");
+        exit;
+    }
+    
+    $conditions = ['id' => $_GET['id']];
+    $row = db_fetch_one($pdo, 'todos', $conditions);
+
+    if (!$row) {
+        header("Location: index.php");
+        exit;
+    }
+}
+
+$todoToEdit = new Todo($row['description'], $row['due_date']);
+if ($row['is_completed']) {
+    $todoToEdit->markAsCompleted();
+}
+$todoToEdit->id = $row['id'];
+
+require 'views/edit.html';
