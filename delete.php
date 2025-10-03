@@ -1,12 +1,17 @@
 <?php
-require_once 'database/db.php';
-require_once 'classes/Todo.php';
+require 'database/db.php';
 
-if (isset($_GET['id'])) {
-    $todo = new Todo($conn);
-    $todo->delete($_GET['id']);
+if (!isset($_GET['id'])) {
+    header("Location: index.php");
+    exit;
 }
 
+$pdo = db_connect();
+
+$conditions = [
+    'id' => $_GET['id']
+];
+
+db_delete($pdo, 'todos', $conditions);
+
 header("Location: index.php");
-exit();
-?>
