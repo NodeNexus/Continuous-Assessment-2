@@ -23,8 +23,12 @@
     </div>
     <footer>
         <?php if (! $todo->isCompleted): ?>
-            <a href="mark-complete.php?id=<?=$todo->id;?>">Mark Complete</a>
+            <a href="mark-complete.php?id=<?=$todo->id;?>" class="secondary">Mark Complete</a>
+            <a href="edit.php?id=<?=$todo->id;?>" class="secondary">Edit</a>
+        <?php else: ?>
+            <a href="edit.php?id=<?=$todo->id;?>" class="secondary">Edit</a>
         <?php endif; ?>
+        <a href="delete.php?id=<?=$todo->id;?>" class="contrast">Delete</a>
     </footer>
 </article>
 <?php } ?>
