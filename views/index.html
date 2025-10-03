@@ -1,5 +1,42 @@
 <?php require 'views/header.html'; ?>
 
+<?php if (!empty($todosDueToday)): ?>
+    <hr>
+    <h2>Due Today! 📅</h2>
+    <?php foreach($todosDueToday as $todo) { ?>
+        <article>
+            <header>
+                <small>Due: <?=$todo->formatDueDate();?></small>
+            </header>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3><?=$todo->description;?></h3>
+                <?php
+                    $color = 'red';
+                    $status = 'Pending';
+                    
+                    if ($todo->isCompleted) {
+                        $color = 'green';
+                        $status = 'Completed';
+                    }
+                ?>
+                <span class="badge" style="background-color: <?=$color;?>; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">
+                    <?=$status;?>
+                </span>
+            </div>
+            <footer>
+                <?php if (! $todo->isCompleted): ?>
+                    <a href="mark-complete.php?id=<?=$todo->id;?>" class="secondary">Mark Complete</a>
+                    <a href="edit.php?id=<?=$todo->id;?>" class="secondary">Edit</a>
+                <?php else: ?>
+                    <a href="edit.php?id=<?=$todo->id;?>" class="secondary">Edit</a>
+                <?php endif; ?>
+                <a href="delete.php?id=<?=$todo->id;?>" class="contrast">Delete</a>
+            </footer>
+        </article>
+    <?php } ?>
+    <hr>
+<?php endif; ?>
+
 <h3>My Todos</h3>
 <?php foreach($todos as $todo) { ?>
 <article>
